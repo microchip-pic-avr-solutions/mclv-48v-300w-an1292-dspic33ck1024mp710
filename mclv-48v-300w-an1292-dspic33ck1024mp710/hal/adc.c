@@ -8,8 +8,8 @@
     This file includes subroutine for initializing ADC Cores of Controller
 
   Description:
-    Definitions in the file are for dsPIC33CK256MP508 on Motor Control 
-    Development board from Microchip
+    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Motor Control Development board from Microchip
 
 *******************************************************************************/
 /*******************************************************************************
@@ -143,6 +143,11 @@ void InitializeADCs (void)
        0 = Dedicated ADC core is disabled  */
     /* Dedicated ADC Core 1 is Disabled prior to configuration */
     ADCON3Hbits.C1EN      = 0 ;
+    /* Dedicated ADC Core 2 Enable bit 
+    1 = Dedicated ADC core is enabled 
+    0 = Dedicated ADC core is disabled  */
+    /* Dedicated ADC Core 2 is Disabled prior to configuration */
+    ADCON3Hbits.C2EN      = 0 ;
     /* Shared ADC Core Enable bit 1 = Shared ADC core is enabled 
        0 = Shared ADC core is disabled  */
     /* Shared ADC Core is Disabled prior to configuration */
@@ -153,8 +158,8 @@ void InitializeADCs (void)
     /* ADC Module Clock Source Divider bits (1 to 64)
        The divider forms a TCORESRC clock used by all ADC cores (shared and 
        dedicated) from the TSRC ADC module clock selected by the CLKSEL<2:0> .
-       000000 = 1 Source Clock Periods */
-    ADCON3Hbits.CLKDIV = 0;
+       000001 = 2 Source Clock Periods */
+    ADCON3Hbits.CLKDIV = 1;
     
     /* Initialize ADC CONTROL REGISTER 4 LOW */
     ADCON4L      = 0x0000;
@@ -166,24 +171,44 @@ void InitializeADCs (void)
        0 = After trigger, the sampling will be stopped immediately and 
            the conversion will be started on the next core clock cycle*/
     ADCON4Lbits.SAMC1EN = 0;
+    /* Dedicated ADC Core 2 Conversion Delay Enable bit
+       0 = After trigger, the sampling will be stopped immediately and 
+           the conversion will be started on the next core clock cycle*/
+    ADCON4Lbits.SAMC2EN = 0;
     
     /* Initialize ADC CONTROL REGISTER 4 HIGH */
     ADCON4H      = 0x0000;
-    /* Dedicated ADC Core 0 Input Channel Selection bits
-       01 = ANA0 00 = AN0 */
-    ADCON4Hbits.C0CHS = 0;
-    /* Dedicated ADC Core 1 Input Channel Selection bits
-       01 = ANA1 00 = AN1 */
-    ADCON4Hbits.C1CHS = 0;
+#ifdef INTERNAL_OPAMP_PIM
+    /* Dedicated ADC Core 0 Input Channel Selection bits for Ia
+       00 = AN0 */
+    ADCON4Hbits.C0CHS = 0b00;
+    /* Dedicated ADC Core 1 Input Channel Selection bits for Ib
+       00 = AN1 */
+    ADCON4Hbits.C1CHS = 0b00;
+    /* Dedicated ADC Core 2 Input Channel Selection bits for Ibus
+       00 = ANB2 */
+    ADCON4Hbits.C2CHS = 0b10;
     
+#else
+    /* Dedicated ADC Core 0 Input Channel Selection bits for Ia
+       00 = ANC0 */
+    ADCON4Hbits.C0CHS = 0b11;
+    /* Dedicated ADC Core 1 Input Channel Selection bits for Ib
+       00 = ANC1 */
+    ADCON4Hbits.C1CHS = 0b11;
+    /* Dedicated ADC Core 2 Input Channel Selection bits for Ibus
+       00 = ANC2 */
+    ADCON4Hbits.C2CHS = 0b11;
+#endif
+   
     /* Initialize DEDICATED ADC CORE 0 CONTROL REGISTER LOW */
     ADCORE0L     = 0x0000;
     /* Dedicated ADC Core 0 Conversion Delay Selection bits 
        These bits determine the time between the trigger event and 
        the start of conversion in the number of the Core Clock Periods (TADCORE)
        Ranges from 2 to 1025 TADCORE
-       if SHRSAMC = 15 ,then Sampling time is 17 TADCORE */
-    ADCORE0Lbits.SAMC = 15;
+       if SHRSAMC = 8 ,then Sampling time is 10 TADCORE */
+    ADCORE0Lbits.SAMC = 8;
     /* Initialize DEDICATED ADC CORE 0 CONTROL REGISTER HIGH */
     ADCORE0H     = 0x0000;
     /* Dedicated ADC Core 0 Input Clock Divider bits
@@ -206,8 +231,8 @@ void InitializeADCs (void)
     These bits determine the time between the trigger event and 
     the start of conversion in the number of the Core Clock Periods (TADCORE)
     Ranges from 2 to 1025 TADCORE
-    if SHRSAMC = 15 ,then Sampling time is 17 TADCORE */
-    ADCORE1Lbits.SAMC = 15;
+    if SHRSAMC = 8 ,then Sampling time is 10 TADCORE */
+    ADCORE1Lbits.SAMC = 8;
     /* Initialize DEDICATED ADC CORE 1 CONTROL REGISTER HIGH */
     ADCORE1H     = 0x0000;
     /* Dedicated ADC Core 1 Input Clock Divider bits
@@ -223,6 +248,31 @@ void InitializeADCs (void)
     /* Dedicated ADC Core 1 Resolution Selection bits
        0b11 = 12-bit ; 0b10 = 10-bit ; 0b01 = 8-bit ; 0b00 = 6-bit resolution */
     ADCORE1Hbits.RES = 3;
+
+    /* Initialize DEDICATED ADC CORE 2 CONTROL REGISTER LOW */
+    ADCORE2L     = 0x0000;
+    /* Dedicated ADC Core 2 Conversion Delay Selection bits 
+    These bits determine the time between the trigger event and 
+    the start of conversion in the number of the Core Clock Periods (TADCORE)
+    Ranges from 2 to 1025 TADCORE
+    if SHRSAMC = 8 ,then Sampling time is 10 TADCORE */
+    ADCORE2Lbits.SAMC = 8;
+    /* Initialize DEDICATED ADC CORE 2 CONTROL REGISTER HIGH */
+    ADCORE2H     = 0x0000;
+    /* Dedicated ADC Core 2 Input Clock Divider bits
+       These bits determine the number of TCORESRC (Source Clock Periods) 
+       for one shared TADCORE (Core Clock Period).
+       1111111 = 254 Source Clock Periods
+        ???
+       0000010 = 4 Source Clock Periods
+       0000001 = 2 Source Clock Periods
+       0000000 = 2 Source Clock Periods
+     */
+    ADCORE2Hbits.ADCS = 0;
+    /* Dedicated ADC Core 1 Resolution Selection bits
+       0b11 = 12-bit ; 0b10 = 10-bit ; 0b01 = 8-bit ; 0b00 = 6-bit resolution */
+    ADCORE2Hbits.RES = 3;
+
     
     /* Configuring ADC INPUT MODE CONTROL REGISTER bits 
        Output Data Sign for Corresponding Analog Inputs bits
@@ -230,18 +280,17 @@ void InitializeADCs (void)
        0 = Channel output data is unsigned    */
     /*ADMOD0L configures Output Data Sign for Analog inputs  AN0 to AN7 */
     ADMOD0L = 0x0000;
+    /*Ia*/
     ADMOD0Lbits.SIGN0 = 1;
+    /*Ib*/
     ADMOD0Lbits.SIGN1 = 1;
-    ADMOD0Lbits.SIGN4 = 1;
-   
-    /*ADMOD0H configures Output Data Sign for Analog inputs  AN8 to AN15 */
-    ADMOD0H = 0;   
-    ADMOD0Hbits.SIGN15 = 0;
-    ADMOD1L = 0x0000;
-    ADMOD1Lbits.SIGN17 = 0;
-    ADMOD1Lbits.SIGN18 = 0;
-    
+    /*Ibus*/
+    ADMOD0Lbits.SIGN2 = 1;
 
+    /*ADMOD1L configures Output Data Sign for Analog inputs  AN16 to AN23 */
+    ADMOD1L = 0;
+    /*POT*/
+    ADMOD1Lbits.SIGN17 = 0;
     
     /* Ensuring all interrupts are disabled and Status Flags are cleared */
     ADIEL = 0;
@@ -282,6 +331,13 @@ void InitializeADCs (void)
        1 = Dedicated ADC core is enabled 
        0 = Dedicated ADC core is disabled  */
     ADCON3Hbits.C1EN      = 1 ;
+    /* Turn on analog power for dedicated core 1 */
+    ADCON5Lbits.C2PWR     = 1 ;
+    while(ADCON5Lbits.C2RDY == 0);
+    /* Dedicated ADC Core 1 Enable bit 
+       1 = Dedicated ADC core is enabled 
+       0 = Dedicated ADC core is disabled  */
+    ADCON3Hbits.C2EN      = 1 ;
     /* Turn on analog power for shared core */
     ADCON5Lbits.SHRPWR    = 1 ;
     while(ADCON5Lbits.SHRRDY == 0);
@@ -294,22 +350,24 @@ void InitializeADCs (void)
     /* Common Interrupt Enable bits
        1 = Common and individual interrupts are enabled for analog channel
        0 = Common and individual interrupts are disabled for analog channel*/
-   
-    _IE18        = 0 ;
+#ifdef SINGLE_SHUNT
+    _IE2        = 1 ;
     /* Clear ADC interrupt flag */
-    _ADCAN18IF    = 0 ;  
+    _ADCAN2IF    = 0 ;  
     /* Set ADC interrupt priority IPL 7  */ 
-    _ADCAN18IP   = 7 ;  
-    /* Disable the AN15 interrupt  */
-    _ADCAN18IE    = 0 ; 
+    _ADCAN2IP   = 7 ;  
+    /* Disable the AN17 interrupt  */
+    _ADCAN2IE    = 0 ;  
+#else
+    _IE17        = 1 ;
+    /* Clear ADC interrupt flag */
+    _ADCAN17IF    = 0 ;  
+    /* Set ADC interrupt priority IPL 7  */ 
+    _ADCAN17IP   = 7 ;  
+    /* Disable the AN17 interrupt  */
+    _ADCAN17IE    = 0 ; 
+#endif
     
-    _IE11        = 0 ;
-    /* Clear ADC interrupt flag */
-    _ADCAN11IF    = 0 ;  
-    /* Set ADC interrupt priority IPL 7  */ 
-    _ADCAN11IP   = 7 ;  
-    /* Disable the AN11 interrupt  */
-    _ADCAN11IE    = 0 ;  
     
     _IE0        = 0 ;
     /* Clear ADC interrupt flag */
@@ -319,46 +377,27 @@ void InitializeADCs (void)
     /* Disable the AN0 interrupt  */
     _ADCAN0IE    = 0 ;  
     
-#ifdef SINGLE_SHUNT    
-     _IE0        = 1 ;
+    
+    _IE1        = 0 ;
     /* Clear ADC interrupt flag */
-    _ADCAN0IF    = 0 ;  
+    _ADCAN1IF    = 0 ;  
     /* Set ADC interrupt priority IPL 7  */ 
-    _ADCAN0IP   = 7 ;  
-    /* Disable the AN4 interrupt  */
-    _ADCAN0IE    = 0 ;
-     
-#else         
-    _IE17        = 1 ;
-    /* Clear ADC interrupt flag */
-    _ADCAN17IF    = 0 ;  
-    /* Set ADC interrupt priority IPL 7  */ 
-    _ADCAN17IP   = 7 ;  
+    _ADCAN1IP   = 7 ;  
     /* Disable the AN1 interrupt  */
-    _ADCAN17IE    = 0 ; 
-#endif
+    _ADCAN1IE    = 0 ;  
     
     /* Trigger Source Selection for Corresponding Analog Inputs bits 
-     *  00101 = PMW1 Trigger 2
         00100 = PMW1 Trigger 1
+        00101 = PMW1 Trigger 2
         00001 = Common software trigger
         00000 = No trigger is enabled  */
-    
-
-#ifdef SINGLE_SHUNT
-    /* Trigger Source for Analog Input #0  = 0b0101 */
-    ADTRIG0Lbits.TRGSRC0 = 0x5;
-#else
-      /* Trigger Source for Analog Input #1  = 0b0100 */
+    /* Trigger Source for Analog Input #0  = 0b0100 for Ia */
+    ADTRIG0Lbits.TRGSRC0 = 0x4;
+    /* Trigger Source for Analog Input #1  = 0b0100 for Ib */
     ADTRIG0Lbits.TRGSRC1 = 0x4;
-    /* Trigger Source for Analog Input #4  = 0b0100 */
-    ADTRIG1Lbits.TRGSRC4 = 0x4;  
-#endif
-    /* Trigger Source for Analog Input #15  = 0b0100 */
-    ADTRIG3Hbits.TRGSRC15 = 0x4;
-    /* Trigger Source for Analog Input #17  = 0b0100 */
+    /* Trigger Source for Analog Input #2  = 0b0101 for Ibus */
+    ADTRIG0Hbits.TRGSRC2 = 0x5;
+    /* Trigger Source for Analog Input #17  = 0b0100 for POT */
     ADTRIG4Lbits.TRGSRC17 = 0x4;
-    /* Trigger Source for Analog Input #18  = 0b0100 */
-    ADTRIG4Hbits.TRGSRC18 = 0x4;
 
 }

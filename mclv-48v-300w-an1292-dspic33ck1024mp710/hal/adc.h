@@ -8,8 +8,8 @@
     This header file lists ADC Configuration related functions and definitions
 
   Description:
-    Definitions in the file are for dsPIC33CK256MP508 on Motor Control 
-    Development board from Microchip
+    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Motor Control Development board from Microchip
 
 *******************************************************************************/
 /*******************************************************************************
@@ -66,30 +66,27 @@
 // *****************************************************************************
 // *****************************************************************************
 // ADC MODULE Related Definitions
-#define ADCBUF_INV_A_IPHASE1    -ADCBUF1
-#define ADCBUF_INV_A_IPHASE2    -ADCBUF4
-#define ADCBUF_INV_A_IBUS       ADCBUF0
-        
 #define ADCBUF_SPEED_REF_A      ADCBUF17
-#define ADCBUF_VBUS_A           ADCBUF15
-#define ADCBUF_MOSFET_TEMP_A    ADCBUF18
-
-#ifdef SINGLE_SHUNT       
-#define EnableADCInterrupt()   _ADCAN0IE = 1
-#define DisableADCInterrupt()  _ADCAN0IE = 0
-#define ClearADCIF()           _ADCAN0IF = 0
-#define ClearADCIF_ReadADCBUF() ADCBUF0
         
-#define _ADCInterrupt _ADCAN0Interrupt  
-#else
+/*The phase current measurement. Here the negative sign is added to the buffers
+  since we are measuring the of return currents from each phase*/   
+#define ADCBUF_INV_A_IPHASE1    (int16_t)(-ADCBUF0)   
+#define ADCBUF_INV_A_IPHASE2    (int16_t)(-ADCBUF1)
+#define ADCBUF_INV_A_IBUS       ADCBUF2
+ 
+#ifdef SINGLE_SHUNT
+#define EnableADCInterrupt()   _ADCAN2IE = 1
+#define DisableADCInterrupt()  _ADCAN2IE = 0
+#define ClearADCIF()           _ADCAN2IF = 0
+#define ClearADCIF_ReadADCBUF() ADCBUF2
+#define _ADCInterrupt _ADCAN2Interrupt 
+#else     
 #define EnableADCInterrupt()   _ADCAN17IE = 1
 #define DisableADCInterrupt()  _ADCAN17IE = 0
 #define ClearADCIF()           _ADCAN17IF = 0
 #define ClearADCIF_ReadADCBUF() ADCBUF17
-        
-#define _ADCInterrupt _ADCAN17Interrupt  
-#endif
-        
+#define _ADCInterrupt _ADCAN17Interrupt
+#endif        
 // *****************************************************************************
 // *****************************************************************************
 // Section: Interface Routines
