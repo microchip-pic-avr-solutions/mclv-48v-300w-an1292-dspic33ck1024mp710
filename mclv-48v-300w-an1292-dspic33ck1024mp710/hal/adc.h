@@ -67,6 +67,8 @@
 // *****************************************************************************
 // ADC MODULE Related Definitions
 #define ADCBUF_SPEED_REF_A      ADCBUF17
+#define ADCBUF_VBUS_A           ADCBUF15
+#define ADCBUF_MOSFET_TEMP_A    ADCBUF19
         
 /*The phase current measurement. Here the negative sign is added to the buffers
   since we are measuring the of return currents from each phase*/   

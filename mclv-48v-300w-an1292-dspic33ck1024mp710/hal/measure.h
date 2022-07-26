@@ -1,19 +1,17 @@
-/*******************************************************************************
-  Measured Analog feedback signals header file
+// <editor-fold defaultstate="collapsed" desc="Description/Instruction ">
+/**
+ * @file measure.h
+ *
+ * @brief This module has functions for signal conditioning of measured
+ *        analog feedback signals.
+ *
+ * Component: MEASURE
+ *
+ */
+// </editor-fold>
 
-  File Name:
-  measure.h
+// <editor-fold defaultstate="collapsed" desc="Disclaimer ">
 
-  Summary:
-    This module has functions for signal conditioning of measured analog
-    feedback signals.
-
-  Description:
-    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
-    Motor Control Development board from Microchip
-
-*******************************************************************************/
-            
 /*******************************************************************************
 * Copyright (c) 2017 released Microchip Technology Inc.  All rights reserved.
 *
@@ -48,6 +46,7 @@
 * certify, or support the code.
 *
 *******************************************************************************/
+// </editor-fold>
 
 #ifndef __MEASURE_H
 #define __MEASURE_H
@@ -56,18 +55,26 @@
 extern "C" {
 #endif
 
+// <editor-fold defaultstate="collapsed" desc="HEADER FILES ">
+
 #include <stdint.h>
 #include "general.h"
+
+// </editor-fold>
+
+// <editor-fold defaultstate="collapsed" desc="DEFINITIONS ">
 
 #define OFFSET_COUNT_BITS   (int16_t)10
 #define OFFSET_COUNT_MAX    (int16_t)(1 << OFFSET_COUNT_BITS)
     
-// *****************************************************************************
-/* Measure Phase Currents data type
+#define OFFSET_COUNT_MOSFET_TEMP 4964
+#define MOSFET_TEMP_COEFF Q15(0.010071108)    //3.3V/(32767*0.01V)
+#define MOSFET_TEMP_AVG_FILTER_SCALE     8
+    
+// </editor-fold>
 
-  Description:
-    This structure will host parameters required to Measure the Phase Currents.
- */
+// <editor-fold defaultstate="collapsed" desc="VARIABLE TYPE DEFINITIONS ">
+
 typedef struct
 {
     int16_t
@@ -87,27 +94,45 @@ typedef struct
 
 } MCAPP_MEASURE_CURRENT_T;
 
-// *****************************************************************************
-/* Measure Analog Channels data type
+typedef struct
+{
+    int16_t input;
+    uint16_t index;
+    uint16_t maxIndex;
+    uint16_t scaler;
+    int16_t avg;
+    int32_t sum;
+    uint16_t status;
+    
+}MCAPP_MEASURE_AVG_T;
 
-  Description:
-    This structure will host parameters required to Measure the Analog Channels.
- */
 typedef struct
 {
     int16_t 
         potValue;         /* Measure potentiometer */
     int16_t
         dcBusVoltage;
+    int16_t
+        MOSFETTemperatureAvg;  
+    MCAPP_MEASURE_AVG_T MOSFETTemperature;
     MCAPP_MEASURE_CURRENT_T
         current;     /* Current measurement parameters */
             
 }MCAPP_MEASURE_T;
 
+// </editor-fold>
+
+// <editor-fold defaultstate="expanded" desc="INTERFACE FUNCTIONS ">
+
 void MCAPP_MeasureCurrentOffset (MCAPP_MEASURE_T *);
 void MCAPP_MeasureCurrentCalibrate (MCAPP_MEASURE_T *);
 void MCAPP_MeasureCurrentInit (MCAPP_MEASURE_T *);
 int16_t MCAPP_MeasureCurrentOffsetStatus (MCAPP_MEASURE_T *);
+void MCAPP_MeasureTemperature(MCAPP_MEASURE_T *,int16_t );
+void MCAPP_MeasureAvgInit(MCAPP_MEASURE_AVG_T *,uint16_t );
+int16_t MCAPP_MeasureAvg(MCAPP_MEASURE_AVG_T *);
+
+// </editor-fold>
 
 #ifdef __cplusplus
 }
