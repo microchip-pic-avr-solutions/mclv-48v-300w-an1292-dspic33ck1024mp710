@@ -29,9 +29,8 @@
 *
 * You agree that you are solely responsible for testing the code and
 * determining its suitability.  Microchip has no obligation to modify, test,
-* certify, or support the code.
-*
-*******************************************************************************/
+* certify, or support the code.*/
+
 #include <xc.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -54,8 +53,7 @@
 #include "board_service.h"
 #include "diagnostics.h"
 #include "singleshunt.h"
-#include "measure.h"
-
+#include "hal/measure.h"
 
 volatile UGF_T uGF;
 
@@ -85,8 +83,7 @@ MCAPP_MEASURE_T measureInputs;
 /* Open loop angle scaling Constant - This corresponds to 1024(2^10)
    Scaling down motorStartUpData.startupRamp to thetaElectricalOpenLoop   */
 #define STARTUPRAMP_THETA_OPENLOOP_SCALER       10 
-/* Fraction of dc link voltage(expressed as a squared amplitude) to set 
- * the limit for current controllers PI Output */
+/* Fraction of dc link voltage(expressed as a squared amplitude) to set the limit for current controllers PI Output */
 #define MAX_VOLTAGE_VECTOR                      0.98
 
 void InitControlParameters(void);
@@ -122,8 +119,9 @@ int main ( void )
 {
     InitOscillator();
     SetupGPIOPorts();
-    /* Turn on LED2 to indicate the device is programmed */
-    LED2 = 1;
+
+    /* Turn on LED1 to indicate the device is programmed */
+    LED1 = 1;
     /* Initialize Peripherals */
     InitPeripherals();
     DiagnosticsInit();
@@ -132,17 +130,26 @@ int main ( void )
     CORCONbits.SATA = 0;
     while(1)
     {        
+        /* Initialize PI control parameters */
+        InitControlParameters();        
+        /* Initialize estimator parameters */
+        InitEstimParm();
+        /* Initialize flux weakening parameters */
+        InitFWParams();
+        /* Initialize measurement parameters */
+        MCAPP_MeasureCurrentInit(&measureInputs);
         /* Reset parameters used for running motor through Inverter A*/
         ResetParmeters();
         
         while(1)
         {
+            ResetSingleShuntSamplePoint(&singleShuntParam);
             DiagnosticsStepMain();
             BoardService();
-
-            if (IsPressed_Button1())
+            
+            if(IsPressed_Button1())
             {
-                if  ((uGF.bits.RunMotor == 1) || (PWM_FAULT_STATUS == 1))
+                if(uGF.bits.RunMotor == 1)
                 {
                     ResetParmeters();
                 }
@@ -150,18 +157,18 @@ int main ( void )
                 {
                     EnablePWMOutputsInverterA();
                     uGF.bits.RunMotor = 1;
-                    LED1 = 1;
                 }
 
             }
-            // Monitoring for Button 2 press in LVMC
-            if (IsPressed_Button2())
+            if(IsPressed_Button2())
             {
-                if ((uGF.bits.RunMotor == 1) && (uGF.bits.OpenLoop == 0))
+                if((uGF.bits.RunMotor == 1) && (uGF.bits.OpenLoop == 0))
                 {
                     uGF.bits.ChangeSpeed = !uGF.bits.ChangeSpeed;
                 }
             }
+            /* LED2 is used as motor run Status */
+            LED2 = uGF.bits.RunMotor;
         }
 
     } // End of Main loop
@@ -192,7 +199,6 @@ int main ( void )
  */
 void ResetParmeters(void)
 {
-    LED1 = 0;
     /* Make sure ADC does not generate interrupt while initializing parameters*/
 	DisableADCInterrupt();
     
@@ -200,8 +206,8 @@ void ResetParmeters(void)
     /* Initialize Single Shunt Related parameters */
     SingleShunt_InitializeParameters(&singleShuntParam);
     INVERTERA_PWM_TRIGA = ADC_SAMPLING_POINT;
-    INVERTERA_PWM_TRIGB = LOOPTIME_TCY>>1;
-    INVERTERA_PWM_TRIGC = LOOPTIME_TCY-1;
+    INVERTERA_PWM_TRIGB = LOOPTIME_TCY>>2;
+    INVERTERA_PWM_TRIGC = LOOPTIME_TCY>>1;
     INVERTERA_PWM_PHASE3 = MIN_DUTY;
     INVERTERA_PWM_PHASE2 = MIN_DUTY;
     INVERTERA_PWM_PHASE1 = MIN_DUTY;
@@ -212,7 +218,6 @@ void ResetParmeters(void)
     INVERTERA_PWM_PDC3 = MIN_DUTY;
     INVERTERA_PWM_PDC2 = MIN_DUTY;
     INVERTERA_PWM_PDC1 = MIN_DUTY;
-    
     DisablePWMOutputsInverterA();
     
     /* Stop the motor   */
@@ -235,8 +240,7 @@ void ResetParmeters(void)
     /* Initialize measurement parameters */
     MCAPP_MeasureCurrentInit(&measureInputs);
 
-    MCAPP_MeasureAvgInit(&measureInputs.MOSFETTemperature,
-            MOSFET_TEMP_AVG_FILTER_SCALE);
+
     /* Enable ADC interrupt and begin main loop timing */
     ClearADCIF();
     adcDataBuffer = ClearADCIF_ReadADCBUF();
@@ -270,10 +274,10 @@ void DoControl( void )
     /* Temporary variables for sqrt calculation of q reference */
     volatile int16_t temp_qref_pow_q15;
     
-    if  (uGF.bits.OpenLoop)
+    if(uGF.bits.OpenLoop)
     {
         /* OPENLOOP:  force rotating angle,Vd and Vq */
-        if  (uGF.bits.ChangeMode)
+        if(uGF.bits.ChangeMode)
         {
             /* Just changed to open loop */
             uGF.bits.ChangeMode = 0;
@@ -291,6 +295,22 @@ void DoControl( void )
                 motorStartUpData.tuningDelayRampup = 0;
             #endif
         }
+        /* Speed reference */
+        ctrlParm.qVelRef = Q_CURRENT_REF_OPENLOOP;
+        /* q current reference is equal to the velocity reference 
+         while d current reference is equal to 0
+        for maximum startup torque, set the q current to maximum acceptable 
+        value represents the maximum peak value */
+        ctrlParm.qVqRef = ctrlParm.qVelRef;
+
+        /* PI control for Q */
+        piInputIq.inMeasure = idq.q;
+        piInputIq.inReference = ctrlParm.qVqRef;
+        MC_ControllerPIUpdate_Assembly(piInputIq.inReference,
+                                       piInputIq.inMeasure,
+                                       &piInputIq.piState,
+                                       &piOutputIq.out);
+        vdq.q = piOutputIq.out;
 
         /* PI control for D */
         piInputId.inMeasure = idq.d;
@@ -300,37 +320,13 @@ void DoControl( void )
                                        &piInputId.piState,
                                        &piOutputId.out);
         vdq.d = piOutputId.out;
-         /* Dynamic d-q adjustment
-         with d component priority 
-         vq=sqrt (vs^2 - vd^2) 
-        limit vq maximum to the one resulting from the calculation above */
-        temp_qref_pow_q15 = (int16_t)(__builtin_mulss(piOutputId.out ,
-                                                      piOutputId.out) >> 15);
-        temp_qref_pow_q15 = Q15(MAX_VOLTAGE_VECTOR) - temp_qref_pow_q15;
-        piInputIq.piState.outMax = _Q15sqrt (temp_qref_pow_q15);
-        piInputIq.piState.outMin = - piInputIq.piState.outMax;    
-        /* PI control for Q */
-        /* Speed reference */
-        ctrlParm.qVelRef = Q_CURRENT_REF_OPENLOOP;
-        /* q current reference is equal to the velocity reference 
-         while d current reference is equal to 0
-        for maximum startup torque, set the q current to maximum acceptable 
-        value represents the maximum peak value */
-        ctrlParm.qVqRef = ctrlParm.qVelRef;
-        piInputIq.inMeasure = idq.q;
-        piInputIq.inReference = ctrlParm.qVqRef;
-        MC_ControllerPIUpdate_Assembly(piInputIq.inReference,
-                                       piInputIq.inMeasure,
-                                       &piInputIq.piState,
-                                       &piOutputIq.out);
-        vdq.q = piOutputIq.out;
 
     }
     else
     /* Closed Loop Vector Control */
     {
         /* if change speed indication, double the speed */
-        if (uGF.bits.ChangeSpeed)
+        if(uGF.bits.ChangeSpeed)
         {
             
             /* Potentiometer value is scaled between NOMINALSPEED_ELECTR and 
@@ -338,7 +334,6 @@ void DoControl( void )
             ctrlParm.targetSpeed = (__builtin_mulss(measureInputs.potValue,
                     MAXIMUMSPEED_ELECTR-NOMINALSPEED_ELECTR)>>15)+
                     NOMINALSPEED_ELECTR;  
-
         }
         else
         {
@@ -348,36 +343,35 @@ void DoControl( void )
             
             ctrlParm.targetSpeed = (__builtin_mulss(measureInputs.potValue,
                     NOMINALSPEED_ELECTR-ENDSPEED_ELECTR)>>15) +
-                    ENDSPEED_ELECTR;  
-            
+                    ENDSPEED_ELECTR;
         }
-        if  (ctrlParm.speedRampCount < SPEEDREFRAMP_COUNT)
+        if(ctrlParm.speedRampCount < SPEEDREFRAMP_COUNT)
         {
            ctrlParm.speedRampCount++; 
         }
         else
         {
-            /* Ramp generator to limit the change of the speed reference
-              the rate of change is defined by CtrlParm.qRefRamp */
-            ctrlParm.qDiff = ctrlParm.qVelRef - ctrlParm.targetSpeed;
-            /* Speed Ref Ramp */
-            if (ctrlParm.qDiff < 0)
-            {
-                /* Set this cycle reference as the sum of
-                previously calculated one plus the reference ramp value */
-                ctrlParm.qVelRef = ctrlParm.qVelRef+ctrlParm.qRefRamp;
-            }
-            else
-            {
-                /* Same as above for speed decrease */
-                ctrlParm.qVelRef = ctrlParm.qVelRef-ctrlParm.qRefRamp;
-            }
-            /* If difference less than half of ref ramp, set reference
-            directly from the pot */
-            if (_Q15abs(ctrlParm.qDiff) < (ctrlParm.qRefRamp << 1))
-            {
-                ctrlParm.qVelRef = ctrlParm.targetSpeed;
-            }
+        /* Ramp generator to limit the change of the speed reference
+          the rate of change is defined by CtrlParm.qRefRamp */
+        ctrlParm.qDiff = ctrlParm.qVelRef - ctrlParm.targetSpeed;
+        /* Speed Ref Ramp */
+        if (ctrlParm.qDiff < 0)
+        {
+            /* Set this cycle reference as the sum of
+            previously calculated one plus the reference ramp value */
+            ctrlParm.qVelRef = ctrlParm.qVelRef+ctrlParm.qRefRamp;
+        }
+        else
+        {
+            /* Same as above for speed decrease */
+            ctrlParm.qVelRef = ctrlParm.qVelRef-ctrlParm.qRefRamp;
+        }
+        /* If difference less than half of ref ramp, set reference
+        directly from the pot */
+        if (_Q15abs(ctrlParm.qDiff) < (ctrlParm.qRefRamp << 1))
+        {
+            ctrlParm.qVelRef = ctrlParm.targetSpeed;
+        }
             ctrlParm.speedRampCount = 0;
         }
         /* Tuning is generating a software ramp
@@ -385,12 +379,12 @@ void DoControl( void )
         TUNING_DELAY_RAMPUP constant */
         #ifdef TUNING
             /* if delay is not completed */
-            if (motorStartUpData.tuningDelayRampup > TUNING_DELAY_RAMPUP)
+            if(motorStartUpData.tuningDelayRampup > TUNING_DELAY_RAMPUP)
             {
                 motorStartUpData.tuningDelayRampup = 0;
             }
             /* While speed less than maximum and delay is complete */
-            if ((motorStartUpData.tuningAddRampup < (MAXIMUMSPEED_ELECTR - ENDSPEED_ELECTR)) &&
+            if((motorStartUpData.tuningAddRampup < (MAXIMUMSPEED_ELECTR - ENDSPEED_ELECTR)) &&
                                                   (motorStartUpData.tuningDelayRampup == 0) )
             {
                 /* Increment ramp add */
@@ -401,7 +395,7 @@ void DoControl( void )
             ctrlParm.qVelRef = ENDSPEED_ELECTR +  motorStartUpData.tuningAddRampup;
         #endif
 
-        if (uGF.bits.ChangeMode)
+        if( uGF.bits.ChangeMode )
         {
             /* Just changed from open loop */
             uGF.bits.ChangeMode = 0;
@@ -445,8 +439,9 @@ void DoControl( void )
         temp_qref_pow_q15 = (int16_t)(__builtin_mulss(piOutputId.out ,
                                                       piOutputId.out) >> 15);
         temp_qref_pow_q15 = Q15(MAX_VOLTAGE_VECTOR) - temp_qref_pow_q15;
-        piInputIq.piState.outMax = _Q15sqrt (temp_qref_pow_q15);
+        piInputIq.piState.outMax =  _Q15sqrt (temp_qref_pow_q15);
         piInputIq.piState.outMin = - piInputIq.piState.outMax;
+
         /* PI control for Q */
         piInputIq.inMeasure  = idq.q;
         piInputIq.inReference  = ctrlParm.qVqRef;
@@ -456,14 +451,14 @@ void DoControl( void )
                                        &piOutputIq.out);
         vdq.q = piOutputIq.out;
     }
-      
+       
 }
 // *****************************************************************************
 /* Function:
-   _ADCInterrupt()
+   _ADCAN23Interrupt()
 
   Summary:
-   _ADCInterrupt() ISR routine
+   _ADCAN23Interrupt() ISR routine
 
   Description:
     Does speed calculation and executes the vector update loop
@@ -484,7 +479,10 @@ void DoControl( void )
  */
 void __attribute__((__interrupt__,no_auto_psv)) _ADCInterrupt()
 {
-#ifdef SINGLE_SHUNT 
+    /* Read ADC Buffet to Clear Flag */
+	adcDataBuffer = ClearADCIF_ReadADCBUF();
+    ClearADCIF(); 
+ #ifdef SINGLE_SHUNT 
     if (IFS4bits.PWM1IF ==1)
     {
         singleShuntParam.adcSamplePoint = 0;
@@ -515,7 +513,7 @@ void __attribute__((__interrupt__,no_auto_psv)) _ADCInterrupt()
             /* Ibus is measured and offset removed from measurement*/
             singleShuntParam.Ibus2 = (int16_t)(ADCBUF_INV_A_IBUS) - 
                                             measureInputs.current.offsetIbus;
-            ADCON3Lbits.SWCTRG = 1;
+
         break;
 
         default:
@@ -527,45 +525,46 @@ void __attribute__((__interrupt__,no_auto_psv)) _ADCInterrupt()
 
         if (singleShuntParam.adcSamplePoint == 0)
         {
-             
+            measureInputs.current.Ia = ADCBUF_INV_A_IPHASE1;
+            measureInputs.current.Ib = ADCBUF_INV_A_IPHASE2;
+            MCAPP_MeasureCurrentCalibrate(&measureInputs);
+
 #ifdef SINGLE_SHUNT
                 
             /* Reconstruct Phase currents from Bus Current*/                
             SingleShunt_PhaseCurrentReconstruction(&singleShuntParam);
+
             iabc.a = singleShuntParam.Ia;
             iabc.b = singleShuntParam.Ib;
 #else
-            measureInputs.current.Ia = ADCBUF_INV_A_IPHASE1;
-            measureInputs.current.Ib = ADCBUF_INV_A_IPHASE2;
-            MCAPP_MeasureCurrentCalibrate(&measureInputs);
             iabc.a = measureInputs.current.Ia;
             iabc.b = measureInputs.current.Ib;
 #endif
-            /* Calculate qId,qIq from qSin,qCos,qIa,qIb */
-            MC_TransformClarke_Assembly(&iabc,&ialphabeta);
-            MC_TransformPark_Assembly(&ialphabeta,&sincosTheta,&idq);
+        /* Calculate qId,qIq from qSin,qCos,qIa,qIb */
+        MC_TransformClarke_Assembly(&iabc,&ialphabeta);
+        MC_TransformPark_Assembly(&ialphabeta,&sincosTheta,&idq);
 
-            /* Speed and field angle estimation */
-            Estim();
-            /* Calculate control values */
-            DoControl();
-            /* Calculate qAngle */
-            CalculateParkAngle();
-            /* if open loop */
-            if (uGF.bits.OpenLoop == 1)
-            {
-                /* the angle is given by park parameter */
-                thetaElectrical = thetaElectricalOpenLoop;
-            }
-            else
-            {
-                /* if closed loop, angle generated by estimator */
-                thetaElectrical = estimator.qRho;
-            }
-            MC_CalculateSineCosine_Assembly_Ram(thetaElectrical,&sincosTheta);
-            MC_TransformParkInverse_Assembly(&vdq,&sincosTheta,&valphabeta);
+        /* Speed and field angle estimation */
+        Estim();
+        /* Calculate control values */
+        DoControl();
+        /* Calculate qAngle */
+        CalculateParkAngle();
+        /* if open loop */
+        if(uGF.bits.OpenLoop == 1)
+        {
+            /* the angle is given by park parameter */
+            thetaElectrical = thetaElectricalOpenLoop;
+        }
+        else
+        {
+            /* if closed loop, angle generated by estimator */
+            thetaElectrical = estimator.qRho;
+        }
+        MC_CalculateSineCosine_Assembly_Ram(thetaElectrical,&sincosTheta);
+        MC_TransformParkInverse_Assembly(&vdq,&sincosTheta,&valphabeta);
 
-            MC_TransformClarkeInverseSwappedInput_Assembly(&valphabeta,&vabc);
+        MC_TransformClarkeInverseSwappedInput_Assembly(&valphabeta,&vabc);
                 
 #ifdef  SINGLE_SHUNT
             SingleShunt_CalculateSpaceVectorPhaseShifted(&vabc,pwmPeriod,&singleShuntParam);
@@ -583,8 +582,8 @@ void __attribute__((__interrupt__,no_auto_psv)) _ADCInterrupt()
     {
         INVERTERA_PWM_TRIGA = ADC_SAMPLING_POINT;
 #ifdef SINGLE_SHUNT
-        INVERTERA_PWM_TRIGB = LOOPTIME_TCY>>1;
-        INVERTERA_PWM_TRIGC = LOOPTIME_TCY-1;
+        INVERTERA_PWM_TRIGB = LOOPTIME_TCY>>2;
+        INVERTERA_PWM_TRIGC = LOOPTIME_TCY>>1;
         singleShuntParam.pwmDutycycle1.dutycycle3 = MIN_DUTY;
         singleShuntParam.pwmDutycycle1.dutycycle2 = MIN_DUTY;
         singleShuntParam.pwmDutycycle1.dutycycle1 = MIN_DUTY;
@@ -619,10 +618,7 @@ void __attribute__((__interrupt__,no_auto_psv)) _ADCInterrupt()
             BoardServiceStepIsr(); 
         }
         measureInputs.potValue = (int16_t)( ADCBUF_SPEED_REF_A>>1);
-        measureInputs.dcBusVoltage = (int16_t)( ADCBUF_VBUS_A>>1);
-        
-        MCAPP_MeasureTemperature(&measureInputs,(int16_t)(ADCBUF_MOSFET_TEMP_A>>1));
-        
+
         DiagnosticsStepIsr();
     }
     /* Read ADC Buffet to Clear Flag */
@@ -655,7 +651,7 @@ void __attribute__((__interrupt__,no_auto_psv)) _ADCInterrupt()
 void CalculateParkAngle(void)
 {
     /* if open loop */
-    if (uGF.bits.OpenLoop)
+    if(uGF.bits.OpenLoop)
     {
         /* begin with the lock sequence, for field alignment */
         if (motorStartUpData.startupLock < LOCK_TIME)
@@ -684,9 +680,13 @@ void CalculateParkAngle(void)
     else 
     {
         /* In closed loop slowly decrease the offset add to the estimated angle */
-        if (estimator.qRhoOffset > 0)
+        if(estimator.qRhoOffset > 0)
         {
             estimator.qRhoOffset--;
+        }
+        else if(estimator.qRhoOffset < 0)
+        {
+           estimator.qRhoOffset++; 
         }
     }
 }
@@ -714,7 +714,6 @@ void CalculateParkAngle(void)
  */
 void InitControlParameters(void)
 {
-    
     ctrlParm.qRefRamp = SPEEDREFRAMP;
     ctrlParm.speedRampCount = SPEEDREFRAMP_COUNT;
     /* Set PWM period to Loop Time */
@@ -746,11 +745,4 @@ void InitControlParameters(void)
     piInputOmega.piState.outMin = -piInputOmega.piState.outMax;
     piInputOmega.piState.integrator = 0;
     piOutputOmega.out = 0;
-}
-
-void __attribute__((__interrupt__,no_auto_psv)) _PWMInterrupt()
-{
-    ResetParmeters();
-    ClearPWMPCIFaultInverterA();
-    ClearPWMIF(); 
 }

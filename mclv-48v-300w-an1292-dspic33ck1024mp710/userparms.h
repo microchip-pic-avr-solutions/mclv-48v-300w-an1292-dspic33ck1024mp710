@@ -44,7 +44,7 @@ extern "C" {
 // *****************************************************************************
 // *****************************************************************************
 #include <stdint.h>
-#include "general.h"
+#include <xc.h>
 
 // *****************************************************************************
 // *****************************************************************************
@@ -70,7 +70,6 @@ constant slope. The slope is determined by TUNING_DELAY_RAMPUP constant.
     #define TUNING_DELAY_RAMPUP   0xF      
 #endif
 
-
 /* open loop continuous functioning */
 /* closed loop transition disabled  */
 #undef OPEN_LOOP_FUNCTIONING
@@ -78,18 +77,18 @@ constant slope. The slope is determined by TUNING_DELAY_RAMPUP constant.
 /* Definition for torque mode - for a separate tuning of the current PI
 controllers, tuning mode will disable the speed PI controller */
 #undef TORQUE_MODE
-/* FOC with single shunt is enabled */
+    
 /* undef to work with dual Shunt  */    
-#undef SINGLE_SHUNT     
-
-#define INTERNAL_OPAMP_CONFIG    
+#undef SINGLE_SHUNT
+    
+/* undef to work with External Op-Amp*/
+#undef INTERNAL_OPAMP_CONFIG
 
 /****************************** Motor Parameters ******************************/
 /********************  support xls file definitions begin *********************/
 /* The following values are given in the xls attached file */
-    
-    
-/*Update the following motor tuning parameters while using LVMC build configuration*/
+        
+/*Update the following motor tuning parameters while using MCLV3 build configuration*/
     
 /* Motor's number of pole pairs */
 #define NOPOLESPAIRS 5
@@ -120,7 +119,7 @@ controllers, tuning mode will disable the speed PI controller */
 /* di = i(t1)-i(t2) limitation
  high speed limitation, for dt 50us 
  the value can be taken from attached xls file */
-#define D_ILIMIT_HS 956
+#define D_ILIMIT_HS 1092
 /* low speed limitation, for dt 8*50us */
 #define D_ILIMIT_LS 4369
 
@@ -162,9 +161,6 @@ before the open loop speed ramp up */
 /* Open loop q current setup - */
 #define Q_CURRENT_REF_OPENLOOP NORM_CURRENT(1.0)
 
-/* Specify Over Current Limit - DC BUS */
-#define Q15_OVER_CURRENT_THRESHOLD NORM_CURRENT(3.0)
-
 /* Maximum motor speed converted into electrical speed */
 #define MAXIMUMSPEED_ELECTR MAXIMUM_SPEED_RPM*NOPOLESPAIRS
 /* Nominal motor speed converted into electrical speed */
@@ -181,25 +177,27 @@ minimum value accepted */
 #define SPEEDREFRAMP   Q15(0.00003)  
 /* The Speed Control Loop Executes every  SPEEDREFRAMP_COUNT */
 #define SPEEDREFRAMP_COUNT   3  
+
+/* PI controllers tuning values - */  
     
-/* PI controllers tuning values - */     
 /* D Control Loop Coefficients */
-#define D_CURRCNTR_PTERM       Q15(0.05)
-#define D_CURRCNTR_ITERM       Q15(0.003)
+#define D_CURRCNTR_PTERM       Q15(0.02)
+#define D_CURRCNTR_ITERM       Q15(0.001)
 #define D_CURRCNTR_CTERM       Q15(0.999)
 #define D_CURRCNTR_OUTMAX      0x7FFF
 
 /* Q Control Loop Coefficients */
-#define Q_CURRCNTR_PTERM       Q15(0.05)
-#define Q_CURRCNTR_ITERM       Q15(0.003)
+#define Q_CURRCNTR_PTERM       Q15(0.02)
+#define Q_CURRCNTR_ITERM       Q15(0.001)
 #define Q_CURRCNTR_CTERM       Q15(0.999)
 #define Q_CURRCNTR_OUTMAX      0x7FFF
 
 /* Velocity Control Loop Coefficients */
-#define SPEEDCNTR_PTERM        Q15(0.05)
-#define SPEEDCNTR_ITERM        Q15(0.001)
+#define SPEEDCNTR_PTERM        Q15(0.5)
+#define SPEEDCNTR_ITERM        Q15(0.005)
 #define SPEEDCNTR_CTERM        Q15(0.999)
-#define SPEEDCNTR_OUTMAX       0x5000
+#define SPEEDCNTR_OUTMAX       0x7FFF
+ 
 /******************************** Field Weakening *****************************/
 /* Field Weakening constant for constant torque range 
    Flux reference value */
