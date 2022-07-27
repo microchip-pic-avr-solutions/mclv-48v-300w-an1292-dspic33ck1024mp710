@@ -1,6 +1,6 @@
 ![image](images/microchip.jpg) 
 
-## MCLV-48V-300W dsPIC33CK256MP508 AN1292
+## MCLV-48V-300W dsPIC33CK1024MP710 AN1292
 
 ## 1. INTRODUCTION
 <p style='text-align: justify;'>
@@ -17,15 +17,15 @@ To clone or download this application from Github, go to the [main page of this 
 >In this document, hereinafter this firmware package is referred as firmware.
 ### 2.2 Software Tools Used for Testing the firmware
 
-- MPLAB® X IDE v5.50 
-- MPLAB® XC16 Compiler v1.70
-- MPLAB® X IDE Plugin: X2C-Scope v1.3.0 
-- DFP: dsPIC33CK-MP_DFP v1.6.176
+- MPLAB® X IDE v6.00 
+- MPLAB® XC16 Compiler v2.00
+- MPLAB® X IDE Plugin: X2C-Scope v1.3.3 
+- DFP: dsPIC33CK-MP_DFP v1.8.224
 > **_NOTE:_**
 >The software used for testing the firmware prior to release is listed above. It is recommended to use the version listed above or later versions for building the firmware.
 ### 2.3 Hardware Tools Required for the Demonstration
 - MCLV-48V-300W Inverter Board (EV18H47A)
-- 	dsPIC33CK1024MP710 Motor Control DIM (EV62P66A)
+- dsPIC33CK1024MP710 Motor Control DIM (EV04L63A)
 - 24V Power Supply [(AC002013)](https://www.microchipdirect.com/dev-tools/AC002013)
 - 24V 3-Phase Brushless DC Motor [(AC300020)](https://www.microchip.com/en-us/development-tool/AC300020)
   <br />
@@ -36,14 +36,6 @@ To clone or download this application from Github, go to the [main page of this 
 <p style='text-align: justify;'>This section describes hardware setup required for the demonstration.</p>
 
 1. <p style='text-align: justify;'> Motor currents are amplified by the amplifiers ( U10 and U11 )on the MCLV-48V-300W Inverter Board. It can also be amplified by the amplifiers internal to the dsPIC33CK1024MP710 populated on the DIM. By default, the firmware and DIM are configured to sample and convert internal amplifier outputs ('internal Op Amp configuration'), measuring the motor currents needed for implementing FOC.</p>
-
-     <p style='text-align: justify;'> The Table-1 summarizes the resistors to be populated and removed to convert the DIM from internal Op Amp configuration to external Op Amp configuration or vice versa.</p>
-
-    <p align="left" >
-     <img  src="images/Tableopamp.png"></p>
-
-
-
 
 2. <p style='text-align: justify;'> Insert the dsPIC33CK1024MP710 Motor Control DIM into the DIM Interface Connector J8 provided on the MCLV-48V-300W Inverter Board. Make sure the DIM is placed and oriented correctly.</p>
 
@@ -66,8 +58,7 @@ To clone or download this application from Github, go to the [main page of this 
       <p align="left">
      <img  src="images/mclvpkob4.png"></p>
 
- 6.	<p style='text-align: justify;'>Alternatively, the device can also be programmed using the programmer/debugger (MPLAB® PICkit™ 4 In-Circuit Debugger - PG164140) by interfacing it through connector J9 of the MCLV-48V-300W Inverter Board as shown below. Ensure that the programmer is oriented correctly before proceeding.</p> 
-
+ 6. Alternatively, the device can also be programmed using the programmer/debugger (MPLAB® PICkit™ 4 In-Circuit Debugger - [PG164140](https://www.microchip.com/en-us/development-tool/PG164140)) by interfacing it through connector J9 of the MCLV-48V-300W Inverter Board as shown below. Ensure that the programmer is oriented correctly before proceeding.</p> 
       <p align="left">
        <img  src="images/mclvprogramming.PNG"></p>
  
@@ -87,14 +78,7 @@ Install MPLAB X IDE and MPLAB XC16 Compiler versions that support the device dsP
 <p style='text-align: justify;'>
 X2C-Scope is a MPLAB X IDE plugin that allows a developer to interact with an application while the application program is running. X2C-Scope enables you to read, write, and plot global variables (for motor control) in real time. It communicates with the target using the UART. To use X2C-Scope, the plugin must be installed:</p>
 
-- In MPLAB X IDE, select <i>Tools>Plugins</i> and click on the Available Plugins tab.
-- Select X2C-Scope plug-in by checking its check box, and then click Install.
-- Look for tool X2C-Scope under <i>Tools>Embedded.</i>
-
-<p align="left">
-  <img  src="images/x2cscopeconfiguration.png"></p>
- 
-<br />
+To set-up and use X2C-Scope, refer the instructions provided in the [webpage.](https://x2cscope.github.io/docs/MPLABX_Plugin.html)
 
 ## 5.  BASIC DEMONSTRATION
 ### 5.1 Firmware Description
@@ -102,13 +86,13 @@ X2C-Scope is a MPLAB X IDE plugin that allows a developer to interact with an ap
 The firmware version needed for the demonstration is mentioned under the [Motor Control Application Firmware Required for the Demonstration](#21-motor-control-application-firmware-required-for-the-demonstration) section.
 <p style='text-align: justify;'>
 This firmware is implemented to work on Microchip’s 16-bit Digital signal controller (dsPIC® DSC) dsPIC33CK1024MP710. 
-For more information, see the dsPIC33CK1024MP710 Family datasheet (DS70005349).</p>
+For more information, see the dsPIC33CK1024MP710 Family datasheet (DS70005496).</p>
 <p style='text-align: justify;'>
 The Motor Control Demo application uses push button to start or stop the motor and potentiometer to vary speed of the motor.This Motor Control Demo Application configures and uses peripherals like PWM, ADC, UART etc.</p>
 
 <p style='text-align: justify;'>
 
-For more details refer Microchip Application note AN1292 'Sensorless Field Oriented Con-trol (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)' available at [Microchip web site](https://www.microchip.com/). </p>
+For more details refer Microchip Application note AN1292 'Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)' available at [Microchip web site](https://www.microchip.com/). </p>
 
 > **_NOTE:_**
 > The project may not build correctly in Windows OS if Maximum path length of any source file in the project is more than 260 characters. In case absolute path is exceeding or nearing maximum length, do any (or both) of the following:
@@ -155,11 +139,11 @@ Follow below instructions step by step to setup and run the motor control demo a
     In the <b><i>‘Conf: [default]’</i></b> category window: 
     <p style='text-align: justify;'>
 
- - Select the specific Compiler Toolchain from the available list of compilers. Please ensure MPLAB® XC16 Compiler supports the device dsPIC33CK1024MP710.In this case, “XC16(v1.70)” is selected.
+ - Select the specific Compiler Toolchain from the available list of compilers. Please ensure MPLAB® XC16 Compiler supports the device dsPIC33CK1024MP710.In this case, “XC16(v2.00)” is selected.
       <p style='text-align: justify;'>
  - Select the Hardware Tool to be used for programming and debugging. 
        <p style='text-align: justify;'>
--	Select the specific Device Family Pack (DFP) from the available list of Packs. In this case, “dsPIC33CK-MP_DFP 1.6.176” is selected.     
+-	Select the specific Device Family Pack (DFP) from the available list of Packs. In this case, “dsPIC33CK-MP_DFP 1.8.224” is selected.     
  -   After selecting Hardware Tool and Compiler Toolchain, click button <b>Apply</b>
         <p align="left">
         <img  src="images/projectpropertiessettings.png"></p>
@@ -261,8 +245,8 @@ To view data plots continuously, uncheck<span style="font-family:Courier New; fo
 For additional information, refer following documents or links.
 1. AN1292 Application Note “[Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf)”
 2. AN1299 Application Note “[Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM](http://ww1.microchip.com/downloads/en/appnotes/01299a.pdf)”
-3. MCLV-48V-300W Inverter Board User’s Guide 
-4. dsPIC33CK1024MP710 Family datasheet [(DS70005349)](https://ww1.microchip.com/downloads/en/DeviceDoc/dsPIC33CK1024MP710-Family-Data-Sheet-DS70005349H.pdf)
+3. MCLV-48V-300W Inverter Board User’s Guide (DS50003297) 
+4. dsPIC33CK1024MP710 Family datasheet (DS70005496) 
 5. [Family Reference manuals (FRM) of dsPIC33CK1024MP710 family](https://www.microchip.com/en-us/product/dsPIC33CK1024MP710#document-table)
 6. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
 7. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
