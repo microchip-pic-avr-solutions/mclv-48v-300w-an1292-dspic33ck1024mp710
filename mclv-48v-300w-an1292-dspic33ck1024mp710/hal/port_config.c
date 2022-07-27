@@ -10,8 +10,8 @@
     pins
 
   Description:
-    Definitions in the file are for dsPIC33CK256MP508 on Motor Control 
-    Development board from Microchip
+    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Motor Control Development board from Microchip
  
 *******************************************************************************/
 /*******************************************************************************
@@ -125,6 +125,14 @@ void SetupGPIOPorts(void)
         ANSELE = 0x0000;
     #endif
 
+    #ifdef TRISF
+        TRISF = 0xFFFF;
+        LATF  = 0x0000;
+    #endif
+    #ifdef ANSELF
+        ANSELF = 0x0000;
+    #endif
+
     MapGPIOHWFunction();
 
     return;
@@ -159,71 +167,78 @@ void MapGPIOHWFunction(void)
     /* ANALOG SIGNALS */
 
     // Configure Port pins for Motor Current Sensing
+    //Ia+
+    ANSELAbits.ANSELA2 = 1;
+    TRISAbits.TRISA2 = 1;    //Pin 24: OA1IN+/AN9/PMA6/RA2
     
-    // Ibus Out
+    //Ia-
+    ANSELAbits.ANSELA1 = 1;
+    TRISAbits.TRISA1 = 1;    //Pin 21: OA1IN-/ANA1/RA1
+    
+    //Ia_out
     ANSELAbits.ANSELA0 = 1;
-    TRISAbits.TRISA0 = 1;   // Pin 16: OA1OUT/AN0/CMP1A/IBIAS0/RA0
+    TRISAbits.TRISA0 = 0;    //Pin 18: OA1OUT/AN0/CMP1A/IBIAS0/RA0
     
-    //Ia Out
+    //Ia_Ext
+    ANSELEbits.ANSELE0 = 1;
+    TRISEbits.TRISE0 = 1;    //Pin 2: AN20/ANC0/CMP5C/RE0
+    
+    //Ib+
+    ANSELBbits.ANSELB4 = 1;
+    TRISBbits.TRISB4 = 1;    //Pin 57: PGC2/OA2IN+/RP36/RB4
+    
+    //Ib-
+    ANSELBbits.ANSELB3 = 1;
+    TRISBbits.TRISB3 = 1;    //Pin 54: PGD2/OA2IN-/AN8/CMP4A/RP35/RB3
+    
+    //Ib_out
     ANSELBbits.ANSELB2 = 1;
-    TRISBbits.TRISB2 = 1;   //Pin 41: OA2OUT/AN1/AN7/ANA0/CMP1D/CMP2D/CMP3D/RP34/SCL3/INT0/RB2
+    TRISBbits.TRISB2 = 0;    //Pin 51: OA2OUT/AN1/AN7/ANA0/ANA2/ANA3/CMP1D/CMP2D/CMP3D/CMP4D/CMP5D/CMP6D/RP34/SCL3/INT0/RB2
     
-    //Ib Out
-    ANSELAbits.ANSELA4 = 1;
-    TRISAbits.TRISA4 = 1;   //Pin 23: OA3OUT/AN4/CMP3B/IBIAS3/RA4
+    //Ib_Ext
+    ANSELEbits.ANSELE1 = 1;
+    TRISEbits.TRISE1 = 1;    //Pin 4: AN21/ANC1/CMP6B/RE1
     
-    
-#ifdef INTERNAL_OPAMP_CONFIG
+    //Ibus+
+    ANSELCbits.ANSELC2 = 1;
+    TRISCbits.TRISC2 = 1;    //Pin 37: OA3IN+/AN14/CMP2B/ISRC1/RP50/PMD13/PMA13/RC2
     
     //Ibus-
-    ANSELAbits.ANSELA1 = 1;
-    TRISAbits.TRISA1 = 1;   //Pin 18: OA1IN-/ANA1/RA1
-    
-    //Ibus+ 
-    ANSELAbits.ANSELA2 = 1;
-    TRISAbits.TRISA2 = 1;   //Pin 20: OA1IN+/AN9/PMA6/RA2
-    
-    //Ia- 
-    ANSELBbits.ANSELB3 = 1;
-    TRISBbits.TRISB3 = 1;   //Pin 43: PGD2/OA2IN-/AN8/RP35/RB3
-    
-    //Ia+ 
-    ANSELBbits.ANSELB4 = 1;
-    TRISBbits.TRISB4 = 1;   //Pin 45: PGC2/OA2IN+/RP36/RB4
-    
-    //Ib- 
     ANSELCbits.ANSELC1 = 1;
-    TRISCbits.TRISC1 = 1;   //Pin 28: OA3IN-/AN13/CMP1B/ISRC0/RP49/PMA7/RC1
+    TRISCbits.TRISC1 = 1;    //Pin 36: OA3IN-/AN13/CMP1B/ISRC0/RP49/PMA7/RC1
     
-    //Ib+ 
-    ANSELCbits.ANSELC2 = 1;
-    TRISCbits.TRISC2 = 1;   //Pin 29: OA3IN+/AN14/CMP2B/ISRC1/RP50/PMD13/PMA13/RC2
+    //Ibus_Out
+    ANSELAbits.ANSELA4 = 1;
+    TRISAbits.TRISA4 = 0;    //Pin 30: OA3OUT/AN4/ANB1/ANB2/CMP3B/IBIAS3/RA4
+    
+    //Ibus_Ext
+    ANSELDbits.ANSELD10 = 1;
+    TRISDbits.TRISD10 = 1;    //Pin 47: AN18/ANC2/CMP3C/ISRC3/RP74/PMD9/PMA9/RD10
+    
+#ifdef INTERNAL_OPAMP_PIM
+    
     //Op-Amp Configuration
-    AMPCON1Hbits.NCHDIS2 = 0;    //Wide input range for Op Amp #2
-    AMPCON1Lbits.AMPEN2 = 1;     //Enables Op Amp #2
-    
     AMPCON1Hbits.NCHDIS1 = 0;    //Wide input range for Op Amp #1
     AMPCON1Lbits.AMPEN1 = 1;     //Enables Op Amp #1
     
-    AMPCON1Hbits.NCHDIS3 = 0;    //Wide input range for Op Amp #3
-    AMPCON1Lbits.AMPEN3 = 1;     //Enables Op Amp #3
+    AMPCON1Hbits.NCHDIS2 = 0;    //Wide input range for Op Amp #2
+    AMPCON1Lbits.AMPEN2 = 1;     //Enables Op Amp #2
     
     AMPCON1Lbits.AMPON = 1;      //Enables op amp modules if their respective AMPENx bits are also asserted
-     
+
 #endif
     
-    // Potentiometer #1 input - used as Speed Reference
-    // POT1 
-    ANSELCbits.ANSELC6= 1;
-    TRISCbits.TRISC6 = 1;   // PIN30: AN17/ANN1/IBIAS1/RP54/PMD12/PMA12/RC6
-    
-    /*TEMPERATURE*/
-    ANSELDbits.ANSELD10 = 1;
-    TRISDbits.TRISD10 = 1;  //PIN38:AN18/CMP3C/ISRC3/RP74/PMD9/PMA9/RD10
-    /*DC Bus Voltage Signals*/
+    // Potentiometer input - used as Speed Reference
+    // POT1 : DIM #28
+    ANSELCbits.ANSELC6 = 1;
+    TRISCbits.TRISC6 = 1;   // PIN38: AN17/ANN1/CMP4B/IBIAS1/RP54/PMD12/PMA12/RC6
+    //Vbus  : DIM #39
     ANSELCbits.ANSELC3 = 1;
-    TRISCbits.TRISC3 = 1;   //PIN33: AN15/CMP2A/IBIAS2/RP51/PMD11/PMA11/RC3
-
+    TRISCbits.TRISC3 = 1;  //AN15/ANN2/CMP2A/IBIAS2/RP51/PMD11/PMA11/RC3
+    //MOSFET Temp  : DIM #24
+    ANSELDbits.ANSELD11 = 1;
+    TRISDbits.TRISD11 = 1;  //AN19/ANB0/CMP2C/RP75/PMA0/PMALL/PSA0/RD11
+    
     /* Digital SIGNALS */   
     // DIGITAL INPUT/OUTPUT PINS
 
@@ -241,28 +256,27 @@ void MapGPIOHWFunction(void)
     TRISBbits.TRISB10 = 0 ;          
     TRISBbits.TRISB11 = 0 ;         
     
+
     // Debug LEDs
-    // LED2 : 
-    TRISEbits.TRISE13 = 0;           // PIN:64 - RE13
-    // LED1 : 
-    TRISEbits.TRISE12 = 0;           // PIN:62 - RE12
+    // LED1 : DIM #30
+    TRISEbits.TRISE4 = 0;           // PIN:28 - RE4
+    
+    // LED2 : DIM #32
+    TRISFbits.TRISF5 = 0;           // PIN:26 - RP85/RF5
 
     // Push button Switches
-    
-    // SW1 : 
-    TRISEbits.TRISE10 = 1;           // PIN:57 - RE10
-    // SW2 : 
-    TRISEbits.TRISE11 = 1;           // PIN:59 - RE11
-    
-    //Configuring RP76 as PCI9 input for FLTLAT_OC_OV
-	_PCI9R = 76;
-	/** Diagnostic Interface for LVMC Board etc.
+      
+    // SW1 : DIM #34
+    TRISFbits.TRISF4 = 1;           // PIN:25 - RP84/RF4
+    // SW2 : DIM #36
+    TRISFbits.TRISF3 = 1;           // PIN:23 - RP83/RF3
+  
+	
+	/** Diagnostic Interface for MCLV-48V-300W.
         Re-map UART Channels to the device pins connected to the following 
         PIM pins on the Motor Control Development Boards .
-        UART_RX : PIN #14 - ANN2/RP77/RD13 (Input)
-        UART_TX : PIN #13 - RP78/PCI21/RD14(Output)   */
-    _U1RXR = 77;
-    _RP78R = 0b000001;
-    
-    
+        UART_RX : DIM #54 (Input)  Pin :95 RP97/APWM1H/RA6
+        UART_TX : DIM #52 (Output) Pin :96 RP98/APWM1L/RA7   */
+    _U1RXR = 97;
+    _RP98R = 0b000001;
 }

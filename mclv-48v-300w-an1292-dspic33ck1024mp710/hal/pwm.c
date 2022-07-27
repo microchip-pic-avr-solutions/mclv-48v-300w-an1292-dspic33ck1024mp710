@@ -9,8 +9,8 @@
     Fine Edge Placement 
 
   Description:
-    Definitions in the file are for dsPIC33CK256MP508 on Motor Control 
-    Development board from Microchip
+    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Motor Control Development board from Microchip
 
 *******************************************************************************/
 /*******************************************************************************
@@ -56,7 +56,6 @@
 #include <xc.h>
 #include <stdint.h>
 #include "pwm.h"
-#include "userparms.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -134,7 +133,7 @@ void InitPWMGenerators(void)
     /* Initialize LOGIC CONTROL REGISTER 3 High */
     LOGCONF     = 0x0000;
     /* PWM EVENT OUTPUT CONTROL REGISTER A */
-    PWMEVTA     = 0x0000;     
+    PWMEVTA     = 0x0000;    
     /* PWM EVENT OUTPUT CONTROL REGISTER B */
     PWMEVTB     = 0x0000;
     /* PWM EVENT OUTPUT CONTROL REGISTER C */
@@ -150,10 +149,11 @@ void InitPWMGenerators(void)
     InitPWMGenerator2 ();
     InitPWMGenerator3 (); 
     
+    
     InitDutyPWM123Generators();
 
     IFS4bits.PWM1IF = 0;
-    IEC4bits.PWM1IE = 1;
+    IEC4bits.PWM1IE = 0;
     IPC16bits.PWM1IP = 7;
 	PG2CONLbits.ON = 1;      // Enable PWM module after initializing generators
     PG3CONLbits.ON = 1;      // Enable PWM module after initializing generators
@@ -215,7 +215,7 @@ void InitDutyPWM123Generators(void)
     Charge_Bootstrap_Capacitors()
 
   Summary:
-    Routine to initialize PWM generators 1-4 to charge bootstrap capacitors
+    Routine to initialize PWM generators 1-3 to charge bootstrap capacitors
 
   Description:
     Function to charge bootstrap capacitors at the beginning
@@ -262,32 +262,32 @@ void ChargeBootstarpCapacitors(void)
     {
         prevStatusCAHALF = currStatusCAHALF;
         currStatusCAHALF = PG1STATbits.CAHALF;
-        if (prevStatusCAHALF != currStatusCAHALF)
+        if(prevStatusCAHALF != currStatusCAHALF)
         {
-            if (currStatusCAHALF == 0)
+            if(currStatusCAHALF == 0)
             {
                 i--; 
                 k++;
-                if (i == (BOOTSTRAP_CHARGING_COUNTS - 50))
+                if(i == (BOOTSTRAP_CHARGING_COUNTS - 50))
                 {
                     // 0 = PWM generator provides data for PWM1L pin
                     PG1IOCONLbits.OVRENL = 0;
                 }
-                else if (i == (BOOTSTRAP_CHARGING_COUNTS - 150))
+                else if(i == (BOOTSTRAP_CHARGING_COUNTS - 150))
                 {
                     // 0 = PWM generator provides data for PWM2L pin
                     PG2IOCONLbits.OVRENL = 0;  
                 }
-                else if (i == (BOOTSTRAP_CHARGING_COUNTS - 250))
+                else if(i == (BOOTSTRAP_CHARGING_COUNTS - 250))
                 {
                     // 0 = PWM generator provides data for PWM3L pin
                     PG3IOCONLbits.OVRENL = 0;  
                 }
-                if (k > 25)
+                if(k > 25)
                 {
-                    if (PG3IOCONLbits.OVRENL == 0)
+                    if(PG3IOCONLbits.OVRENL == 0)
                     {
-                        if (INVERTERA_PWM_PDC3 > 2)
+                        if(INVERTERA_PWM_PDC3 > 2)
                         {
                             INVERTERA_PWM_PDC3 -= 2;
                         }
@@ -296,9 +296,9 @@ void ChargeBootstarpCapacitors(void)
                            INVERTERA_PWM_PDC3 = 0; 
                         }
                     }
-                    if (PG2IOCONLbits.OVRENL == 0)
+                    if(PG2IOCONLbits.OVRENL == 0)
                     {
-                        if (INVERTERA_PWM_PDC2 > 2)
+                        if(INVERTERA_PWM_PDC2 > 2)
                         {
                             INVERTERA_PWM_PDC2 -= 2;
                         }
@@ -307,9 +307,9 @@ void ChargeBootstarpCapacitors(void)
                             INVERTERA_PWM_PDC2 = 0; 
                         }
                     }
-                    if (PG1IOCONLbits.OVRENL == 0)
+                    if(PG1IOCONLbits.OVRENL == 0)
                     {
-                        if (INVERTERA_PWM_PDC1 > 2)
+                        if(INVERTERA_PWM_PDC1 > 2)
                         {
                             INVERTERA_PWM_PDC1 -= 2;
                         }
@@ -323,6 +323,7 @@ void ChargeBootstarpCapacitors(void)
             }
         }
     }
+
     // PDCx: PWMx GENERATOR DUTY CYCLE REGISTER
     // Initialize the PWM duty cycle for charging
     INVERTERA_PWM_PDC3 = 0;
@@ -491,7 +492,7 @@ void InitPWMGenerator1 (void)
     /* ADC Trigger 1 Source is PG1TRIGB Compare Event Enable bit
        0 = PG1TRIGB register compare event is disabled as trigger source for 
            ADC Trigger 1 */
-    PG1EVTLbits.ADTR1EN2 = 0;    
+    PG1EVTLbits.ADTR1EN2 = 0;
     /* ADC Trigger 1 Source is PG1TRIGA Compare Event Enable bit
        1 = PG1TRIGA register compare event is enabled as trigger source for 
            ADC Trigger 1 */
@@ -506,8 +507,8 @@ void InitPWMGenerator1 (void)
     /* Initialize PWM GENERATOR 1 EVENT REGISTER HIGH */
     PG1EVTH      = 0x0000;
     /* FLTIEN: PCI Fault Interrupt Enable bit
-       1 = Fault interrupt is enabled */
-    PG1EVTHbits.FLTIEN = 1;
+       0 = Fault interrupt is disabled */
+    PG1EVTHbits.FLTIEN = 0;
     /* PCI Current Limit Interrupt Enable bit
        0 = Current limit interrupt is disabled */
     PG1EVTHbits.CLIEN = 0;
@@ -589,7 +590,7 @@ void InitPWMGenerator1 (void)
        ? ?
        00001 = PCI Source #1
        00000 = Software PCI control bit (SWPCI) only*/
-    PG1FPCILbits.PSS = 9;
+    PG1FPCILbits.PSS = 19;
     
     /* PWM GENERATOR 1 Fault PCI REGISTER HIGH */
     PG1FPCIH     = 0x0000;
@@ -606,7 +607,7 @@ void InitPWMGenerator1 (void)
        010 = Any edge
        001 = Rising edge
        000 = Level-sensitive*/
-    PG1FPCIHbits.ACP   = 3;
+    PG1FPCIHbits.ACP   = 0;
     /* PCI SR Latch Mode bit
        1 = SR latch is Reset-dominant in Latched Acceptance modes
        0 = SR latch is Set-dominant in Latched Acceptance modes*/
@@ -662,7 +663,7 @@ void InitPWMGenerator1 (void)
     PG1TRIGB     = 0x0000;
     /* Initialize PWM GENERATOR 1 TRIGGER C REGISTER */
     PG1TRIGC     = 0x0000;
-    
+   
 }
     
 // *****************************************************************************
@@ -914,7 +915,7 @@ void InitPWMGenerator2 (void)
        ? ?
        00001 = PCI Source #1
        00000 = Software PCI control bit (SWPCI) only*/
-    PG2FPCILbits.PSS = 9;
+    PG2FPCILbits.PSS = 19;
     
     /* PWM GENERATOR 1 Fault PCI REGISTER HIGH */
     PG2FPCIH     = 0x0000;
@@ -931,7 +932,7 @@ void InitPWMGenerator2 (void)
        010 = Any edge
        001 = Rising edge
        000 = Level-sensitive*/
-    PG2FPCIHbits.ACP   = 3;
+    PG2FPCIHbits.ACP   = 0;
     /* PCI SR Latch Mode bit
        1 = SR latch is Reset-dominant in Latched Acceptance modes
        0 = SR latch is Set-dominant in Latched Acceptance modes*/
@@ -992,10 +993,10 @@ void InitPWMGenerator2 (void)
     
 // *****************************************************************************
 /* Function:
-    InitPWMGenerator4()
+    InitPWMGenerator3()
 
   Summary:
-    Routine to initialize PWM generators 4 
+    Routine to initialize PWM generators 3 
 
   Description:
     Function initializes PWM module for 3-phase inverter control in Complimentary
@@ -1031,7 +1032,7 @@ void InitPWMGenerator3 (void)
     PG3CONLbits.MODSEL = 6;
 #else
     PG3CONLbits.MODSEL = 4;
-#endif    
+#endif  
     /* Trigger Count Select bits
        000 = PWM Generator produces 1 PWM cycle after triggered */
     PG3CONLbits.TRGCNT = 0;
@@ -1184,7 +1185,7 @@ void InitPWMGenerator3 (void)
        10 = Interrupts CPU at ADC Trigger 1 event
        11 = Time base interrupts are disabled */
     PG3EVTHbits.IEVTSEL = 3;
-    /* ADC Trigger 4 Source is PG3TRIGC Compare Event Enable bit
+    /* ADC Trigger 3 Source is PG3TRIGC Compare Event Enable bit
        0 = PG3TRIGC register compare event is disabled as 
            trigger source for ADC Trigger 2 */
     PG3EVTHbits.ADTR2EN3 = 0;
@@ -1240,7 +1241,7 @@ void InitPWMGenerator3 (void)
        ? ?
        00001 = PCI Source #1
        00000 = Software PCI control bit (SWPCI) only*/
-    PG3FPCILbits.PSS = 9;
+    PG3FPCILbits.PSS = 19;
     
     /* PWM GENERATOR 1 Fault PCI REGISTER HIGH */
     PG3FPCIH     = 0x0000;
@@ -1257,7 +1258,7 @@ void InitPWMGenerator3 (void)
        010 = Any edge
        001 = Rising edge
        000 = Level-sensitive*/
-    PG3FPCIHbits.ACP   = 3;
+    PG3FPCIHbits.ACP   = 0;
     /* PCI SR Latch Mode bit
        1 = SR latch is Reset-dominant in Latched Acceptance modes
        0 = SR latch is Set-dominant in Latched Acceptance modes*/
@@ -1272,7 +1273,7 @@ void InitPWMGenerator3 (void)
        011 = PWM Generator is triggered
        010 = LEB is active
        001 = Duty cycle is active (base PWM Generator signal)
-       000 = No termination qualifier used (qualifier forced to ?1?b1?)(4)*/
+       000 = No termination qualifier used (qualifier forced to ?1?b1?)(3)*/
     PG3FPCIHbits.TQSS  = 3;
 #endif
     

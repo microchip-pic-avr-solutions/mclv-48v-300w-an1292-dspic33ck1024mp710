@@ -9,8 +9,8 @@
     Clock Output
 
   Description:
-    Definitions in the file are for dsPIC33CK256MP508 on Motor Control 
-    Development board from Microchip
+    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Motor Control Development board from Microchip
 
 *******************************************************************************/
 /*******************************************************************************
@@ -180,7 +180,7 @@ void InitOscillator(void)
 void EnableREFCLKOutput(uint16_t Divider)
 {
     
-    if (REFOCONLbits.ROACTIVE == 0)
+    if(REFOCONLbits.ROACTIVE == 0)
     {
         REFOCONHbits.RODIV = Divider;
         REFOCONLbits.ROSLP = 1;

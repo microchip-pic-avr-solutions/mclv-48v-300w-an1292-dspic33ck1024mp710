@@ -9,7 +9,7 @@
 	to select oscillators, communication channels and resets.
 
   Description:
-    Definitions in the file are for dsPIC33CK256MP508.
+    Definitions in the file are for dsPIC33CK1024MP710.
 *******************************************************************************/
 /*******************************************************************************
 * Copyright (c) 2019 released Microchip Technology Inc.  All rights reserved.
@@ -68,6 +68,7 @@
 #pragma config POSCMD = NONE            // Primary Oscillator Mode Select bits (Primary Oscillator disabled)
 #pragma config OSCIOFNC = ON            // OSC2 Pin Function bit (OSC2 is general purpose digital I/O pin)
 #pragma config FCKSM = CSECMD           // Clock Switching Mode bits (Clock switching is enabled,Fail-safe Clock Monitor is disabled)
+//#pragma config PLLKEN = LOCK            // PLL Lock source select (Source for PLL Lock signal is lock detect)
 #pragma config XTCFG = G3               // XT Config (24-32 MHz crystals)
 #pragma config XTBST = DISABLE           // XT Boost (Boost the kick-start)
 
@@ -81,6 +82,7 @@
 
 // FPOR
 #pragma config BISTDIS = DISABLED       // Memory BIST Feature Disable (mBIST on reset feature disabled)
+//#pragma config BSSO = NORMAL            // Boot Space Start Option (Normal startup operation after reset, execute instruction at 0x000000)
 
 // FICD
 #pragma config ICS = PGD3               // ICD Communication Channel Select bits (Communicate on PGEC3 and PGED3)
@@ -106,7 +108,7 @@
 #pragma config ALTI2C1 = OFF            // Alternate I2C1 Pin bit (I2C1 mapped to SDA1/SCL1 pins)
 #pragma config ALTI2C2 = OFF            // Alternate I2C2 Pin bit (I2C2 mapped to SDA2/SCL2 pins)
 #pragma config ALTI2C3 = OFF            // Alternate I2C3 Pin bit (I2C3 mapped to SDA3/SCL3 pins)
-#pragma config SMBEN = SMBUS            // SM Bus Enable (SMBus input threshold is enabled)
+#pragma config SMB3EN = SMBUS            // SM Bus Enable (SMBus input threshold is enabled)
 #pragma config SPI2PIN = PPS            // SPI2 Pin Select bit (SPI2 uses I/O remap (PPS) pins)
 
 // FALTREG
@@ -118,3 +120,5 @@
 // FBTSEQ
 #pragma config BSEQ = 0xFFF             // Relative value defining which partition will be active after device Reset; the partition containing a lower boot number will be active (Boot Sequence Number bits)
 #pragma config IBSEQ = 0xFFF            // The one's complement of BSEQ; must be calculated by the user and written during device programming. (Inverse Boot Sequence Number bits)
+
+// #pragma config statements should precede project file includes.
