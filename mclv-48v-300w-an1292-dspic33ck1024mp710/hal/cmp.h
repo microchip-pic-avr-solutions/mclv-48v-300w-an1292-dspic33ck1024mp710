@@ -5,7 +5,7 @@
  * This header file lists interface functions - configuring and enabling the 
  * Comparator Modules and its output
  * 
- * Definitions in this file are for dsPIC33CK256MP508.
+ * Definitions in this file are for dsPIC33CK1024MP710.
  * 
  * Component: HAL - CMP
  * 
