@@ -5,7 +5,7 @@
  * This header file lists interface functions - to configure and enable UART1 
  * module and its features
  * 
- * Definitions in this file are for dsPIC33CK1024MP710 MC PIM plugged onto 
+ * Definitions in this file are for dsPIC33CK1024MP710 MC DIM plugged onto 
  * Motor Control Development board from Microchip.
  * 
  * Component: HAL - UART1

@@ -10,7 +10,7 @@
     pins
 
   Description:
-    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Definitions in the file are for dsPIC33CK1024MP710 MC DIM plugged onto
     Motor Control Development board from Microchip
 
 *******************************************************************************/
@@ -69,9 +69,9 @@
 // SW2 : DIM #36
 #define SW2                   PORTFbits.RF3
         
-// S2 : PIM #83 - Used as START/STOP button of Motor
+// S2 : DIM #83 - Used as START/STOP button of Motor
 #define BUTTON_START_STOP        SW1
-// S3 : PIM #84 - Used as Speed HALF/DOUBLE button of Motor
+// S3 : DIM #84 - Used as Speed HALF/DOUBLE button of Motor
 #define BUTTON_SPEED_HALF_DOUBLE      SW2
 
 

@@ -8,7 +8,7 @@
     This file includes subroutine for initializing ADC Cores of Controller
 
   Description:
-    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Definitions in the file are for dsPIC33CK1024MP710 MC DIM plugged onto
     Motor Control Development board from Microchip
 
 *******************************************************************************/
@@ -178,7 +178,7 @@ void InitializeADCs (void)
     
     /* Initialize ADC CONTROL REGISTER 4 HIGH */
     ADCON4H      = 0x0000;
-#ifdef INTERNAL_OPAMP_PIM
+#ifdef INTERNAL_OPAMP_CONFIG
     /* Dedicated ADC Core 0 Input Channel Selection bits for Ia
        00 = AN0 */
     ADCON4Hbits.C0CHS = 0b00;

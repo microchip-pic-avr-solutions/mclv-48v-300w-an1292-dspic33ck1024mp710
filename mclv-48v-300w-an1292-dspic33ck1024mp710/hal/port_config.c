@@ -10,7 +10,7 @@
     pins
 
   Description:
-    Definitions in the file are for dsPIC33CK1024MP710 MC PIM plugged onto
+    Definitions in the file are for dsPIC33CK1024MP710 MC DIM plugged onto
     Motor Control Development board from Microchip
  
 *******************************************************************************/
@@ -215,7 +215,7 @@ void MapGPIOHWFunction(void)
     ANSELDbits.ANSELD10 = 1;
     TRISDbits.TRISD10 = 1;    //Pin 47: AN18/ANC2/CMP3C/ISRC3/RP74/PMD9/PMA9/RD10
     
-#ifdef INTERNAL_OPAMP_PIM
+#ifdef INTERNAL_OPAMP_CONFIG
     
     //Op-Amp Configuration
     AMPCON1Hbits.NCHDIS1 = 0;    //Wide input range for Op Amp #1
@@ -274,7 +274,7 @@ void MapGPIOHWFunction(void)
 	
 	/** Diagnostic Interface for MCLV-48V-300W.
         Re-map UART Channels to the device pins connected to the following 
-        PIM pins on the Motor Control Development Boards .
+        DIM pins on the Motor Control Development Boards .
         UART_RX : DIM #54 (Input)  Pin :95 RP97/APWM1H/RA6
         UART_TX : DIM #52 (Output) Pin :96 RP98/APWM1L/RA7   */
     _U1RXR = 97;
