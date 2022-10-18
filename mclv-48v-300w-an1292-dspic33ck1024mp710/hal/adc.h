@@ -9,7 +9,7 @@
 
   Description:
     Definitions in the file are for dsPIC33CK1024MP710 MC DIM plugged onto
-    Motor Control Development board from Microchip
+	Motor Control Development board from Microchip
 
 *******************************************************************************/
 /*******************************************************************************
@@ -66,16 +66,16 @@
 // *****************************************************************************
 // *****************************************************************************
 // ADC MODULE Related Definitions
-#define ADCBUF_SPEED_REF_A      ADCBUF17
-#define ADCBUF_VBUS_A           ADCBUF15
-#define ADCBUF_MOSFET_TEMP_A    ADCBUF19
-        
 /*The phase current measurement. Here the negative sign is added to the buffers
   since we are measuring the of return currents from each phase*/   
 #define ADCBUF_INV_A_IPHASE1    (int16_t)(-ADCBUF0)   
 #define ADCBUF_INV_A_IPHASE2    (int16_t)(-ADCBUF1)
 #define ADCBUF_INV_A_IBUS       ADCBUF2
- 
+        
+#define ADCBUF_SPEED_REF_A      ADCBUF17
+#define ADCBUF_VBUS_A           ADCBUF15
+#define ADCBUF_MOSFET_TEMP_A    ADCBUF19
+        
 #ifdef SINGLE_SHUNT
 #define EnableADCInterrupt()   _ADCAN2IE = 1
 #define DisableADCInterrupt()  _ADCAN2IE = 0

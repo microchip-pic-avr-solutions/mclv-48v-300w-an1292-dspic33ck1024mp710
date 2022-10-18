@@ -18,7 +18,7 @@
       },
       "dfp":{
          "name":"dsPIC33CK-MP_DFP",
-         "semverRange":"=1.8.224"
+         "semverRange":"=1.9.228"
       },
 	  "configurator": {
          "name": "MCC",
@@ -36,7 +36,7 @@
       },
 	  "peripherals":[
          "ADC",
-		 "PWM"
+	 "PWM"
       ],
       "keywords":[
          "Motor Control",

@@ -86,7 +86,7 @@
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="dsPIC33CK-MP_DFP" vendor="Microchip" version="1.8.224"/>
+        <pack name="dsPIC33CK-MP_DFP" vendor="Microchip" version="1.9.228"/>
       </packs>
       <ScriptingSettings>
       </ScriptingSettings>
@@ -369,6 +369,10 @@
         <property key="CLC 2" value="true"/>
         <property key="CLC 3" value="true"/>
         <property key="CLC 4" value="true"/>
+        <property key="CLC 5" value="true"/>
+        <property key="CLC 6" value="true"/>
+        <property key="CLC 7" value="true"/>
+        <property key="CLC 8" value="true"/>
         <property key="CRC" value="true"/>
         <property key="DACFRZ" value="true"/>
         <property key="DMA" value="true"/>
@@ -398,6 +402,7 @@
         <property key="PTGFRZ" value="true"/>
         <property key="QEI1" value="true"/>
         <property key="QEI2" value="true"/>
+        <property key="QEI3" value="true"/>
         <property key="REFO" value="true"/>
         <property key="SENT1" value="true"/>
         <property key="SENT2" value="true"/>
@@ -555,6 +560,10 @@
         <property key="CLC 2" value="true"/>
         <property key="CLC 3" value="true"/>
         <property key="CLC 4" value="true"/>
+        <property key="CLC 5" value="true"/>
+        <property key="CLC 6" value="true"/>
+        <property key="CLC 7" value="true"/>
+        <property key="CLC 8" value="true"/>
         <property key="CRC" value="true"/>
         <property key="DACFRZ" value="true"/>
         <property key="DMA" value="true"/>
@@ -584,6 +593,7 @@
         <property key="PTGFRZ" value="true"/>
         <property key="QEI1" value="true"/>
         <property key="QEI2" value="true"/>
+        <property key="QEI3" value="true"/>
         <property key="REFO" value="true"/>
         <property key="SENT1" value="true"/>
         <property key="SENT2" value="true"/>

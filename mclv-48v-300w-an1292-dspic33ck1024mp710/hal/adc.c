@@ -9,7 +9,7 @@
 
   Description:
     Definitions in the file are for dsPIC33CK1024MP710 MC DIM plugged onto
-    Motor Control Development board from Microchip
+	Motor Control Development board from Microchip
 
 *******************************************************************************/
 /*******************************************************************************
@@ -186,7 +186,7 @@ void InitializeADCs (void)
        00 = AN1 */
     ADCON4Hbits.C1CHS = 0b00;
     /* Dedicated ADC Core 2 Input Channel Selection bits for Ibus
-       00 = ANB2 */
+       10 = ANB2 */
     ADCON4Hbits.C2CHS = 0b10;
     
 #else
@@ -207,8 +207,8 @@ void InitializeADCs (void)
        These bits determine the time between the trigger event and 
        the start of conversion in the number of the Core Clock Periods (TADCORE)
        Ranges from 2 to 1025 TADCORE
-       if SHRSAMC = 8 ,then Sampling time is 10 TADCORE */
-    ADCORE0Lbits.SAMC = 8;
+       if SHRSAMC = 15 ,then Sampling time is 17 TADCORE */
+    ADCORE0Lbits.SAMC = 15;
     /* Initialize DEDICATED ADC CORE 0 CONTROL REGISTER HIGH */
     ADCORE0H     = 0x0000;
     /* Dedicated ADC Core 0 Input Clock Divider bits
@@ -231,8 +231,8 @@ void InitializeADCs (void)
     These bits determine the time between the trigger event and 
     the start of conversion in the number of the Core Clock Periods (TADCORE)
     Ranges from 2 to 1025 TADCORE
-    if SHRSAMC = 8 ,then Sampling time is 10 TADCORE */
-    ADCORE1Lbits.SAMC = 8;
+    if SHRSAMC = 15 ,then Sampling time is 17 TADCORE */
+    ADCORE1Lbits.SAMC = 15;
     /* Initialize DEDICATED ADC CORE 1 CONTROL REGISTER HIGH */
     ADCORE1H     = 0x0000;
     /* Dedicated ADC Core 1 Input Clock Divider bits
@@ -291,7 +291,7 @@ void InitializeADCs (void)
     /*Vbus*/
     ADMOD0Hbits.SIGN15 = 0;
     /*ADMOD1L configures Output Data Sign for Analog inputs  AN16 to AN23 */
-    ADMOD1L = 0;
+    ADMOD1L = 0x0000;
     /*POT*/
     ADMOD1Lbits.SIGN17 = 0;
     /*MOSFET Temp*/

@@ -167,6 +167,9 @@ void MapGPIOHWFunction(void)
     /* ANALOG SIGNALS */
 
     // Configure Port pins for Motor Current Sensing
+   
+#ifdef INTERNAL_OPAMP_CONFIG
+    
     //Ia+
     ANSELAbits.ANSELA2 = 1;
     TRISAbits.TRISA2 = 1;    //Pin 24: OA1IN+/AN9/PMA6/RA2
@@ -179,10 +182,6 @@ void MapGPIOHWFunction(void)
     ANSELAbits.ANSELA0 = 1;
     TRISAbits.TRISA0 = 0;    //Pin 18: OA1OUT/AN0/CMP1A/IBIAS0/RA0
     
-    //Ia_Ext
-    ANSELEbits.ANSELE0 = 1;
-    TRISEbits.TRISE0 = 1;    //Pin 2: AN20/ANC0/CMP5C/RE0
-    
     //Ib+
     ANSELBbits.ANSELB4 = 1;
     TRISBbits.TRISB4 = 1;    //Pin 57: PGC2/OA2IN+/RP36/RB4
@@ -194,11 +193,7 @@ void MapGPIOHWFunction(void)
     //Ib_out
     ANSELBbits.ANSELB2 = 1;
     TRISBbits.TRISB2 = 0;    //Pin 51: OA2OUT/AN1/AN7/ANA0/ANA2/ANA3/CMP1D/CMP2D/CMP3D/CMP4D/CMP5D/CMP6D/RP34/SCL3/INT0/RB2
-    
-    //Ib_Ext
-    ANSELEbits.ANSELE1 = 1;
-    TRISEbits.TRISE1 = 1;    //Pin 4: AN21/ANC1/CMP6B/RE1
-    
+ 
     //Ibus+
     ANSELCbits.ANSELC2 = 1;
     TRISCbits.TRISC2 = 1;    //Pin 37: OA3IN+/AN14/CMP2B/ISRC1/RP50/PMD13/PMA13/RC2
@@ -211,12 +206,6 @@ void MapGPIOHWFunction(void)
     ANSELAbits.ANSELA4 = 1;
     TRISAbits.TRISA4 = 0;    //Pin 30: OA3OUT/AN4/ANB1/ANB2/CMP3B/IBIAS3/RA4
     
-    //Ibus_Ext
-    ANSELDbits.ANSELD10 = 1;
-    TRISDbits.TRISD10 = 1;    //Pin 47: AN18/ANC2/CMP3C/ISRC3/RP74/PMD9/PMA9/RD10
-    
-#ifdef INTERNAL_OPAMP_CONFIG
-    
     //Op-Amp Configuration
     AMPCON1Hbits.NCHDIS1 = 0;    //Wide input range for Op Amp #1
     AMPCON1Lbits.AMPEN1 = 1;     //Enables Op Amp #1
@@ -224,8 +213,24 @@ void MapGPIOHWFunction(void)
     AMPCON1Hbits.NCHDIS2 = 0;    //Wide input range for Op Amp #2
     AMPCON1Lbits.AMPEN2 = 1;     //Enables Op Amp #2
     
+    AMPCON1Hbits.NCHDIS3 = 0;    //Wide input range for Op Amp #3
+    AMPCON1Lbits.AMPEN3 = 1;     //Enables Op Amp #3
+    
     AMPCON1Lbits.AMPON = 1;      //Enables op amp modules if their respective AMPENx bits are also asserted
-
+#else
+    
+    //Ia_Ext
+    ANSELEbits.ANSELE0 = 1;
+    TRISEbits.TRISE0 = 1;    //Pin 2: AN20/ANC0/CMP5C/RE0
+    
+    //Ib_Ext
+    ANSELEbits.ANSELE1 = 1;
+    TRISEbits.TRISE1 = 1;    //Pin 4: AN21/ANC1/CMP6B/RE1
+    
+    //Ibus_Ext
+    ANSELDbits.ANSELD10 = 1;
+    TRISDbits.TRISD10 = 1;    //Pin 47: AN18/ANC2/CMP3C/ISRC3/RP74/PMD9/PMA9/RD10
+    
 #endif
     
     // Potentiometer input - used as Speed Reference
@@ -271,6 +276,7 @@ void MapGPIOHWFunction(void)
     // SW2 : DIM #36
     TRISFbits.TRISF3 = 1;           // PIN:23 - RP83/RF3
   
+
 	
 	/** Diagnostic Interface for MCLV-48V-300W.
         Re-map UART Channels to the device pins connected to the following 

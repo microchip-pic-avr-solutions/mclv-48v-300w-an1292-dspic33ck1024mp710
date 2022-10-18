@@ -61,7 +61,6 @@
 #include <xc.h>
 #include <stdint.h>
 #include "clock.h"
-#include "userparms.h"
 // *****************************************************************************
 // *****************************************************************************
 // Section: Constants
@@ -73,14 +72,20 @@
 #define INVERTERA_PWM_PDC1      PG1DC
 #define INVERTERA_PWM_PDC2      PG2DC
 #define INVERTERA_PWM_PDC3      PG3DC
-
+        
 #define INVERTERA_PWM_PHASE1    PG1PHASE 
 #define INVERTERA_PWM_PHASE2    PG2PHASE
 #define INVERTERA_PWM_PHASE3    PG3PHASE  
         
 #define INVERTERA_PWM_TRIGA      PG1TRIGA 
 #define INVERTERA_PWM_TRIGB      PG1TRIGB   
-#define INVERTERA_PWM_TRIGC      PG1TRIGC         
+#define INVERTERA_PWM_TRIGC      PG1TRIGC      
+        
+#define PWM_FAULT_STATUS        PG1STATbits.FLTACT
+        
+#define _PWMInterrupt           _PWM1Interrupt
+#define ClearPWMIF()            _PWM1IF = 0        
+        
 /* Specify PWM Frequency in Hertz */
 #define PWMFREQUENCY_HZ         20000
 /* Specify dead time in micro seconds */
@@ -97,7 +102,7 @@
 #define BOOTSTRAP_CHARGING_COUNTS (uint16_t)((BOOTSTRAP_CHARGING_TIME_SECS/LOOPTIME_SEC )* 2)
         
 // Definition to enable or disable PWM Fault
-#undef ENABLE_PWM_FAULT
+#define ENABLE_PWM_FAULT
         
 #define DDEADTIME               (uint16_t)(DEADTIME_MICROSEC*FOSC_MHZ)
 // loop time in terms of PWM clock period

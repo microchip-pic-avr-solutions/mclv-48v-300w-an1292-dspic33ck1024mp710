@@ -36,15 +36,19 @@
 #include <stdbool.h>
 #include "port_config.h"
 #include "board_service.h"
+#include "userparms.h"
 #include "adc.h"
 #include "pwm.h"
+#include "cmp.h"
 
 BUTTON_T buttonStartStop;
 BUTTON_T buttonSpeedHalfDouble;
+
 uint16_t boardServiceISRCounter = 0;
 
 void DisablePWMOutputsInverterA(void);
 void EnablePWMOutputsInverterA(void);
+void ClearPWMPCIFaultInverterA(void);
 void BoardServiceInit(void);
 void BoardServiceStepIsr(void);
 void BoardService(void);
@@ -59,7 +63,7 @@ static void ButtonScan(BUTTON_T * ,bool);
 
 bool IsPressed_Button1(void)
 {
-    if(buttonStartStop.status)
+    if (buttonStartStop.status)
     {
         buttonStartStop.status = false;
         return true;
@@ -72,7 +76,7 @@ bool IsPressed_Button1(void)
 
 bool IsPressed_Button2(void)
 {
-    if(buttonSpeedHalfDouble.status)
+    if (buttonSpeedHalfDouble.status)
     {
         buttonSpeedHalfDouble.status = false;
         return true;
@@ -139,6 +143,7 @@ void ButtonGroupInitialize(void)
     buttonStartStop.state = BUTTON_NOT_PRESSED;
     buttonStartStop.debounceCount = 0;
     buttonStartStop.state = false;
+
     buttonSpeedHalfDouble.state = BUTTON_NOT_PRESSED;
     buttonSpeedHalfDouble.debounceCount = 0;
     buttonSpeedHalfDouble.state = false;
@@ -167,7 +172,13 @@ void ButtonGroupInitialize(void)
     None.
  */
 void InitPeripherals(void)
-{                
+{        
+    uint16_t cmpReference = 0;
+    CMP_Initialize();
+    CMP4_ModuleEnable(true);
+    cmpReference = (uint16_t)(__builtin_mulss(Q15_OVER_CURRENT_THRESHOLD,2047)>>15);
+    cmpReference = cmpReference + 2048; 
+    CMP4_ReferenceSet(cmpReference);
     InitializeADCs();
     
     InitPWMGenerators();
@@ -231,6 +242,14 @@ void EnablePWMOutputsInverterA(void)
     PG1IOCONLbits.OVRENH = 0;  
     // 0 = PWM Generator provides data for the PWM1L pin
     PG1IOCONLbits.OVRENL = 0;     
+}
+
+void ClearPWMPCIFaultInverterA(void)
+{
+    
+    PG1FPCILbits.SWTERM = 1;
+    PG2FPCILbits.SWTERM = 1;
+    PG3FPCILbits.SWTERM = 1;
 }
 
 void PWMDutyCycleSet(MC_DUTYCYCLEOUT_T *pPwmDutycycle)
