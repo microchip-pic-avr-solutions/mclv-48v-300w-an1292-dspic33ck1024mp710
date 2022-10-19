@@ -245,12 +245,13 @@ To view data plots continuously, uncheck<span style="font-family:Courier New; fo
 For additional information, refer following documents or links.
 1. AN1292 Application Note “[Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf)”
 2. AN1299 Application Note “[Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM](http://ww1.microchip.com/downloads/en/appnotes/01299a.pdf)”
-3. MCLV-48V-300W Inverter Board User’s Guide (DS50003297) 
-4. dsPIC33CK1024MP710 Family datasheet (DS70005496) 
-5. [Family Reference manuals (FRM) of dsPIC33CK1024MP710 family](https://www.microchip.com/en-us/product/dsPIC33CK1024MP710#document-table)
-6. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
-7. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
-8. [MPLAB® XC16 Compiler installation](http://microchipdeveloper.com/xc16:installation)
+3. MCLV-48V-300W Inverter Board User’s Guide (DS50003297)
+4. dsPIC33CK1024MP710 Motor Control Dual In-Line Module (DIM) Information Sheet(DS50003343)
+5. dsPIC33CK1024MP710 Family datasheet (DS70005496) 
+6. [Family Reference manuals (FRM) of dsPIC33CK1024MP710 family](https://www.microchip.com/en-us/product/dsPIC33CK1024MP710#document-table)
+7. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
+8. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
+9. [MPLAB® XC16 Compiler installation](http://microchipdeveloper.com/xc16:installation)
 
 
 
